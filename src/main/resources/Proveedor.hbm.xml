@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "https://hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="com.pepe.p20241009.Models">
+    <class name="Proveedor" table="proveedor" schema="produccion">
+        <id name="p" column="p">
+            
+        </id>
+        <property name="pnombre" column="pnombre" />
+ 		<property name="categoria" column="categoria" />
+        <property name="ciudad" column="ciudad" />
+    </class> 
+</hibernate-mapping>
