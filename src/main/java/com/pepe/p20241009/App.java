@@ -9,6 +9,7 @@ import org.hibernate.query.Query;
 
 import com.pepe.p20241009.Models.Componente;
 import com.pepe.p20241009.Models.Proveedor;
+import com.pepe.p20241009.Models.ProveedorGrupo;
 /**
  * Hello world!
  */
@@ -43,8 +44,90 @@ public class App {
     	//mostrarRegistroProveedores();
     	mostrarRegistroProveedoresWhere();
     	mostrarRegistroProveedoresOrderBy();
-    	//ejemplo group by
+    	//mostrarRegistroProveedoresGroupBy();//revisar
+    	mostrarRegistrosProveedoresByCiudad("ORURO");
+    	mostrarRegistrosProveedoresByCiudad("LA PAZ");
+    	
+    	//actualizacionRegistroProveedor();
+    	//eliminacionRegistroProveedor();
+    	
+    	paginacion(0);
+    	paginacion(2);
     }
+
+	private static void paginacion(int inicio) {
+		Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        String hql = "FROM Proveedor";
+        Query query = sesion.createQuery(hql);
+        query.setFirstResult(inicio); // cuenta desde 0
+        query.setMaxResults(2);
+        List resultado = query.list();
+        System.out.println("Éxito en paginación");
+        for(Iterator iterator= resultado.iterator();iterator.hasNext();) {
+        	Proveedor p = (Proveedor) iterator.next();
+        	System.out.println(String.format("Ciudad: %s ( %s )", p.getCiudad(), p.getP()));
+        }
+	}
+
+	private static void eliminacionRegistroProveedor() {
+		Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        Proveedor pr = sesion.get(Proveedor.class, "BR");
+        sesion.delete(pr);
+        tx.commit();
+        /*Con HQL: DELETE FROM Proveedor WHERE p = :p
+        Query consulta = sesion.createQuery(hql);
+        consulta.setParameter("p", "BR");
+        int resultado = consulta.executeUpdate();
+        */ 
+	}
+
+	private static void actualizacionRegistroProveedor() {
+		Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        Proveedor pr = sesion.get(Proveedor.class, "BR");
+        pr.setCiudad("SANTA CRUZ");
+        pr.setPnombre("Borrame por favor");
+        sesion.update(pr);
+        tx.commit();
+        System.out.println("Exito en modificación de proveedor!!");
+	}
+
+	private static void mostrarRegistrosProveedoresByCiudad(String ciudad) {
+		Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        String hql = "FROM Proveedor AS pro WHERE pro.ciudad = :c"; // SELECT pro.* FROM Proveedor pro;
+        Query consulta = sesion.createQuery(hql);
+        consulta.setParameter("c", ciudad);
+        List proveedores = consulta.getResultList();
+        for(Iterator iterator= proveedores.iterator();iterator.hasNext();) {
+        	Proveedor p = (Proveedor) iterator.next();
+        	System.out.println(String.format("Ciudad: %s ( %s )", p.getCiudad(), p.getP()));
+        }
+        tx.commit();
+        System.out.println("Exito lectura proveedor!!");
+	}
+
+	private static void mostrarRegistroProveedoresGroupBy() {
+		Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        String hql = "SELECT new com.pepe.p20241009.Models.ProveedorGrupo(pro.ciudad AS ciudad, COUNT(pro.ciudad) AS cantidad, SUM(pro.categoria) AS suma) FROM Proveedor AS pro GROUP BY pro.ciudad"; // SELECT pro.* FROM Proveedor pro;
+        Query consulta = sesion.createQuery(hql);
+        //List proveedores = sesion.createQuery("FROM com.pepe.p20241009.Models.Proveedor").list();
+        List proveedores = consulta.getResultList();
+        for(Iterator iterator= proveedores.iterator();iterator.hasNext();) {
+        	ProveedorGrupo p = (ProveedorGrupo) iterator.next();
+        	System.out.println(String.format("Grupo %s: %d miembro(s); sumatoria de categorías: %d", p.getCiudad(), p.getCantidad(),p.getSuma()));
+        }
+        tx.commit();
+        System.out.println("Exito lectura proveedor!!");
+	}
 
 	private static void mostrarRegistroProveedoresOrderBy() {
 		Transaction tx= null;
