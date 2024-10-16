@@ -10,5 +10,9 @@
         <property name="pnombre" column="pnombre" />
  		<property name="categoria" column="categoria" />
         <property name="ciudad" column="ciudad" />
+        <set name="envios" table="envio" cascade="all" inverse="true">
+        	<key column="p"/>
+        	<one-to-many class="com.pepe.p20241009.Models.Envio"/>
+        </set>
     </class> 
 </hibernate-mapping>

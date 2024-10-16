@@ -1,10 +1,15 @@
 package com.pepe.p20241009.Models;
 
+
+import java.util.Set;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 @Entity
 @Table(name="componente", schema="produccion")
@@ -17,6 +22,8 @@ public class Componente {
 	private String color;
 	private int peso;
 	private String ciudad;
+	@OneToMany(fetch=FetchType.LAZY, mappedBy="c", targetEntity=Envio.class)
+	private Set envios;
 	public Componente() {
 		
 	}
@@ -49,6 +56,12 @@ public class Componente {
 	}
 	public void setCiudad(String ciudad) {
 		this.ciudad = ciudad;
+	}
+	public Set getEnvios() {
+		return envios;
+	}
+	public void setEnvios(Set envios) {
+		this.envios = envios;
 	}
 	
 }

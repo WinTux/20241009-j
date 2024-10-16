@@ -14,6 +14,8 @@
         <property name="hibernate.format_sql">true</property>
         <!-- Entidades -->
         <mapping class="com.pepe.p20241009.Models.Componente"/>
+        <mapping class="com.pepe.p20241009.Models.Articulo"/>
+        <mapping class="com.pepe.p20241009.Models.Envio"/>
         <mapping resource="Proveedor.hbm.xml"/>
 	</session-factory>
 </hibernate-configuration>

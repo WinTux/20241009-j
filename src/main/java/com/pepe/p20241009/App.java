@@ -7,7 +7,9 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import com.pepe.p20241009.Models.Articulo;
 import com.pepe.p20241009.Models.Componente;
+import com.pepe.p20241009.Models.Envio;
 import com.pepe.p20241009.Models.Proveedor;
 import com.pepe.p20241009.Models.ProveedorGrupo;
 /**
@@ -53,7 +55,24 @@ public class App {
     	
     	paginacion(0);
     	paginacion(2);
+    	
+    	mostrarEnviosUsandoMapeoDeColecciones();
     }
+
+	private static void mostrarEnviosUsandoMapeoDeColecciones() {
+		Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        String hql = "FROM Articulo WHERE t = 'T1'";
+        Query query = sesion.createQuery(hql);
+        Articulo art = (Articulo) query.uniqueResult();
+        System.out.println("Éxito leyendo Artículo");
+        System.out.println(art.getTnombre());
+        for(Iterator iterador=  art.getEnvios().iterator();iterador.hasNext();) {
+        	Envio env = (Envio)iterador.next();
+        	System.out.println("Cantidad de evíos: "+env.getCantidad());
+        }
+	}
 
 	private static void paginacion(int inicio) {
 		Transaction tx= null;
