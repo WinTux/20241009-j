@@ -59,7 +59,26 @@ public class App {
     	mostrarEnviosUsandoMapeoDeColecciones();
     	
     	mostrarEnviosByArticulo("T1");
+    	
+    	mostrarRegistrosProcedimientoAlmacenado();
     }
+
+	private static void mostrarRegistrosProcedimientoAlmacenado() {
+		Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        //Query consulta = sesion.createNativeQuery("{CALL listar()}", Envio.class);
+        Query<Envio> consulta = sesion.createNativeQuery("SELECT * FROM produccion.listar()", Envio.class);
+        List<Envio> envios = consulta.getResultList();
+        System.out.println("Resultado de Procedimiento almacenado (función):");
+        for(Iterator iterador=  envios.iterator();iterador.hasNext();) {
+        	Envio env = (Envio) iterador.next();
+        	System.out.println(
+            		String.format("Proveedor: %s, Componente: %s, Artículo: %s (%d)", env.getP().getPnombre(), env.getC().getNombre(), env.getT().getTnombre(), env.getCantidad())	
+            			);
+        }
+        tx.commit(); // revisar excepción "envio"
+	}
 
 	private static void mostrarEnviosByArticulo(String IdArticulo) {
 		Transaction tx= null;
