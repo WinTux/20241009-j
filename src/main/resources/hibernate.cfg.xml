@@ -10,7 +10,7 @@
         <property name="hibernate.connection.password">123456Ax+</property>
         <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
         <!-- Opcionales: informativos -->
-        <property name="hibernate.show_sql">true</property>
+        <!--<property name="hibernate.show_sql">true</property>-->
         <property name="hibernate.format_sql">true</property>
         <!-- Entidades -->
         <mapping class="com.pepe.p20241009.Models.Componente"/>

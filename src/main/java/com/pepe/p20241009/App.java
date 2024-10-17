@@ -57,7 +57,25 @@ public class App {
     	paginacion(2);
     	
     	mostrarEnviosUsandoMapeoDeColecciones();
+    	
+    	mostrarEnviosByArticulo("T1");
     }
+
+	private static void mostrarEnviosByArticulo(String IdArticulo) {
+		Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        String hql = "FROM Articulo WHERE t = :c";
+        Query consulta = sesion.createQuery(hql);
+        consulta.setParameter("c", IdArticulo);
+        Articulo art = (Articulo)consulta.uniqueResult();
+        for(Iterator iterador=  art.getEnvios().iterator();iterador.hasNext();) {
+        	Envio env = (Envio)iterador.next();
+        	System.out.println(
+        		String.format("Proveedor: %s, Componente: %s, Artículo: %s (%d)", env.getP().getPnombre(), env.getC().getNombre(), env.getT().getTnombre(), env.getCantidad())	
+        			);
+        }
+	}
 
 	private static void mostrarEnviosUsandoMapeoDeColecciones() {
 		Transaction tx= null;
