@@ -5,13 +5,20 @@ import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.procedure.ProcedureCall;
 import org.hibernate.query.Query;
+import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 
 import com.pepe.p20241009.Models.Articulo;
 import com.pepe.p20241009.Models.Componente;
 import com.pepe.p20241009.Models.Envio;
 import com.pepe.p20241009.Models.Proveedor;
 import com.pepe.p20241009.Models.ProveedorGrupo;
+
+import jakarta.persistence.ParameterMode;
+import jakarta.persistence.StoredProcedureQuery;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 /**
  * Hello world!
  */
@@ -61,7 +68,89 @@ public class App {
     	mostrarEnviosByArticulo("T1");
     	
     	mostrarRegistrosProcedimientoAlmacenado();
+    	
+    	mostrarRegistrosComponentesFuncionConParam(15,18);
+    	
+    	//mostrarRegistrosComponentesFuncionConParam2(15,18);
+    	
+    	criteriaQuery();
+    	criteriaQuery2();
+    	criteriaQuery3();
     }
+    private static void criteriaQuery3() {
+		Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        HibernateCriteriaBuilder builder = sesion.getCriteriaBuilder();
+        CriteriaQuery<Componente> cq = sesion.getCriteriaBuilder()
+        		.createQuery(Componente.class);
+        Root<Componente> raiz = cq.from(Componente.class);// SELECT * FROM componente;
+        cq.select(raiz).where(builder.like(raiz.get("color"), "%O%"));
+        List<Componente> comps = sesion.createQuery(cq).getResultList();
+        for(Componente c : comps)
+        	System.out.println(String.format("%s, %s (%s)", c.getNombre(), c.getColor(), c.getCiudad()));
+	}
+	private static void criteriaQuery2() {
+		Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        HibernateCriteriaBuilder builder = sesion.getCriteriaBuilder();
+        CriteriaQuery<Componente> cq = sesion.getCriteriaBuilder()
+        		.createQuery(Componente.class);
+        Root<Componente> raiz = cq.from(Componente.class);// SELECT * FROM componente;
+        cq.select(raiz).where(builder.equal(raiz.get("color"), "ROJO"));
+        List<Componente> comps = sesion.createQuery(cq).getResultList();
+        for(Componente c : comps)
+        	System.out.println(String.format("%s, %s (%s)", c.getNombre(), c.getColor(), c.getCiudad()));
+	}
+	private static void criteriaQuery() {
+		Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        CriteriaQuery<Componente> cq = sesion.getCriteriaBuilder()
+        		.createQuery(Componente.class);
+        cq.from(Componente.class);// SELECT * FROM componente;
+        List<Componente> comps = sesion.createQuery(cq).getResultList();
+        for(Componente c : comps)
+        	System.out.println(String.format("%s, %s (%s)", c.getNombre(), c.getColor(), c.getCiudad()));
+	}
+
+	private static void mostrarRegistrosComponentesFuncionConParam2(int min, int max) {
+		Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        /*
+        ProcedureCall pc = sesion.createStoredProcedureCall("listarcomp");
+        pc.registerParameter("minimo", Integer.class, ParameterMode.IN);
+        pc.registerParameter("maximo", Integer.class, ParameterMode.IN);
+        pc.getParameterRegistration("minimo");//.bindValue(min);
+        */
+        StoredProcedureQuery spq = sesion.createStoredProcedureQuery("produccion.listarcomp", Componente.class);
+        spq.registerStoredProcedureParameter("minimo", Integer.class, ParameterMode.IN);
+        spq.registerStoredProcedureParameter("maximo", Integer.class, ParameterMode.IN);
+        spq.setParameter("minimo", (Integer)min);
+        spq.setParameter("maximo", (Integer)max);
+        List<Componente> compos = spq.getResultList();
+        for(Componente c : compos)
+        	System.out.println(String.format("%s, %s (%s)", c.getNombre(), c.getColor(), c.getCiudad()));
+	}
+
+	private static void mostrarRegistrosComponentesFuncionConParam(int min, int max) {
+		Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        Query consulta = sesion.createNativeQuery("SELECT * FROM produccion.listarcomp(?,?)", Componente.class);
+        consulta.setParameter(1, min);
+        consulta.setParameter(2, max);
+        System.out.println("Componentes de acuerdo a valores mínimo y máximo de peso:");
+        List<Componente> componentes = consulta.getResultList();
+        for(Componente comp : componentes) {
+        	System.out.println(
+            		String.format("Componente: %s, Peso: %d kg, Color: %s (%s)", comp.getNombre(), comp.getPeso(), comp.getColor(), comp.getCiudad())	
+            			);
+        }
+        tx.commit();
+	}
 
 	private static void mostrarRegistrosProcedimientoAlmacenado() {
 		Transaction tx= null;
