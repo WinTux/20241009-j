@@ -11,13 +11,16 @@ import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 
 import com.pepe.p20241009.Models.Articulo;
 import com.pepe.p20241009.Models.Componente;
+import com.pepe.p20241009.Models.ComponenteJoin;
 import com.pepe.p20241009.Models.Envio;
 import com.pepe.p20241009.Models.Proveedor;
 import com.pepe.p20241009.Models.ProveedorGrupo;
+import com.pepe.p20241009.Models.ProveedorSimple;
 
 import jakarta.persistence.ParameterMode;
 import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Root;
 /**
  * Hello world!
@@ -74,10 +77,91 @@ public class App {
     	//mostrarRegistrosComponentesFuncionConParam2(15,18);
     	
     	criteriaQuery();
-    	criteriaQuery2();
-    	criteriaQuery3();
+    	criteriaQuery2();// WHERE
+    	criteriaQuery3();//LIKE (%, _)
+    	criteriaQuery4(15, 18);// BETWEEN
+    	criteriaQuery5(true); // ORDER BY
+    	criteriaQuery5(false);
+    	criteriaQuery6(4);// LIMIT
+    	criteriaQuery7();// Proyección
+    	criteriaQuery8();// INNER JOIN
     }
-    private static void criteriaQuery3() {
+    private static void criteriaQuery8() {
+    	System.out.println("Ejemplo de INNER JOIN");
+    	Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        HibernateCriteriaBuilder builder = sesion.getCriteriaBuilder();
+        CriteriaQuery<ComponenteJoin> cq = sesion.getCriteriaBuilder()
+        		.createQuery(ComponenteJoin.class);
+        Root<Envio> raiz = cq.from(Envio.class);
+        raiz.join("c", JoinType.INNER);
+        // componente INNER JOIN envio
+        cq.select(builder.construct(ComponenteJoin.class, raiz.get("e"),raiz.get("c").get("color"),raiz.get("cantidad")));
+        List<ComponenteJoin> resultado = sesion.createQuery(cq).getResultList();
+        for(ComponenteJoin cj : resultado)
+        	System.out.println(String.format("[%s] Color: %s, cantidad: %d", cj.getE(), cj.getColor(), cj.getCantidad()));
+	}
+	private static void criteriaQuery7() {
+    	System.out.println("Ejemplo de Proyección");
+    	Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        HibernateCriteriaBuilder builder = sesion.getCriteriaBuilder();
+        CriteriaQuery<ProveedorSimple> cq = sesion.getCriteriaBuilder()
+        		.createQuery(ProveedorSimple.class);
+        Root<Proveedor> raiz = cq.from(Proveedor.class);
+        cq.select(builder.construct(ProveedorSimple.class, raiz.get("p"), raiz.get("pnombre"), raiz.get("ciudad")));
+        List<ProveedorSimple> ps = sesion.createQuery(cq).getResultList();
+        for(ProveedorSimple p: ps)
+        	System.out.println(String.format("[%s] %s, %s.", p.getP(),p.getPnombre(),p.getCiudad()));
+	}
+	private static void criteriaQuery6(int limite) {
+    	System.out.println("Ejemplo de LIMIT");
+    	Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        HibernateCriteriaBuilder builder = sesion.getCriteriaBuilder();
+        CriteriaQuery<Componente> cq = sesion.getCriteriaBuilder()
+        		.createQuery(Componente.class);
+        Root<Componente> raiz = cq.from(Componente.class);
+        cq.select(raiz).orderBy(builder.desc(raiz.get("peso")));
+        List<Componente> comps = sesion.createQuery(cq).setMaxResults(limite).getResultList();
+        for(Componente c: comps)
+        	System.out.println(String.format("Componente %s de color %s pesando %d kg.", c.getNombre(), c.getColor(), c.getPeso()));
+	}
+	private static void criteriaQuery5(boolean ascendente) {
+    	System.out.println(String.format("Ejemplo de ORDER BY (%s)", ascendente ? "ASC" : "DESC"));
+    	Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        HibernateCriteriaBuilder builder = sesion.getCriteriaBuilder();
+        CriteriaQuery<Componente> cq = sesion.getCriteriaBuilder()
+        		.createQuery(Componente.class);
+        Root<Componente> raiz = cq.from(Componente.class);
+        if(ascendente)
+        	cq.select(raiz).orderBy(builder.asc(raiz.get("peso")));
+        else
+        	cq.select(raiz).orderBy(builder.desc(raiz.get("peso")));
+        List<Componente> comps = sesion.createQuery(cq).getResultList();
+        for(Componente c: comps)
+        	System.out.println(String.format("Componente %s de color %s pesando %d kg.", c.getNombre(), c.getColor(), c.getPeso()));
+	}
+	private static void criteriaQuery4(int min, int max) {
+    	Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        HibernateCriteriaBuilder builder = sesion.getCriteriaBuilder();
+        CriteriaQuery<Componente> cq = sesion.getCriteriaBuilder()
+        		.createQuery(Componente.class);
+        Root<Componente> raiz = cq.from(Componente.class);
+        cq.select(raiz).where(builder.between(raiz.get("peso"), min, max));
+        List<Componente> comps = sesion.createQuery(cq).getResultList();
+        System.out.println("Ejemplo de BETWEEN");
+        for(Componente c: comps)
+        	System.out.println(String.format("Componente %s de color %s pesando %d kg.", c.getNombre(), c.getColor(), c.getPeso()));
+	}
+	private static void criteriaQuery3() {
 		Transaction tx= null;
         Session sesion =HibernateUtil.getSessionFactory().openSession();
         tx = sesion.beginTransaction();
