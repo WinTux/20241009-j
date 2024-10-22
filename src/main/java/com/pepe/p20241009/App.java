@@ -13,6 +13,7 @@ import com.pepe.p20241009.Models.Articulo;
 import com.pepe.p20241009.Models.Componente;
 import com.pepe.p20241009.Models.ComponenteJoin;
 import com.pepe.p20241009.Models.Envio;
+import com.pepe.p20241009.Models.FuncionesGroupBy;
 import com.pepe.p20241009.Models.Proveedor;
 import com.pepe.p20241009.Models.ProveedorGrupo;
 import com.pepe.p20241009.Models.ProveedorSimple;
@@ -85,8 +86,35 @@ public class App {
     	criteriaQuery6(4);// LIMIT
     	criteriaQuery7();// Proyección
     	criteriaQuery8();// INNER JOIN
+    	
+    	criteriaQuery9();// GROUP BY (funciones de agregación)
     }
-    private static void criteriaQuery8() {
+    private static void criteriaQuery9() {
+    	System.out.println("Ejemplo de GROUP BY");
+    	Transaction tx= null;
+        Session sesion =HibernateUtil.getSessionFactory().openSession();
+        tx = sesion.beginTransaction();
+        HibernateCriteriaBuilder builder = sesion.getCriteriaBuilder();
+        CriteriaQuery<FuncionesGroupBy> cq = sesion.getCriteriaBuilder()
+        		.createQuery(FuncionesGroupBy.class);
+        Root<Componente> raiz = cq.from(Componente.class);
+        cq.groupBy(raiz.get("ciudad"));
+        cq.select(
+        	builder.construct(FuncionesGroupBy.class,
+        		raiz.get("ciudad"),
+        		builder.count(raiz.get("ciudad")),
+        		builder.max(raiz.get("peso")),
+        		builder.min(raiz.get("peso")),
+        		builder.sum(raiz.get("peso")),
+        		builder.avg(raiz.get("peso"))
+        	)
+        );
+        List<FuncionesGroupBy> componentes = 
+        		sesion.createQuery(cq).getResultList();
+        for(FuncionesGroupBy f : componentes)
+        	System.out.printf("En la ciudad %s existen %d componentes, cuyo peso máximo es %d kg y mínimo es %d kg; teniendo un peso total de %d kg y una media de %f kg por componente.\n",f.getCiudad(), f.getConteo(), f.getMax(), f.getMin(), f.getSum(), f.getMedia());
+	}
+	private static void criteriaQuery8() {
     	System.out.println("Ejemplo de INNER JOIN");
     	Transaction tx= null;
         Session sesion =HibernateUtil.getSessionFactory().openSession();

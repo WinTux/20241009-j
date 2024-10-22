@@ -20,6 +20,21 @@ public class Envio {
 	private Proveedor p;
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="c")
+	
+	//@OneToOne(fetch=FetchType.LAZY)
+	//@PrimaryKeyJoinColumn
+	
+	/*
+	@ManyToMany(fetch=FetchType.LAZY)
+	@JoinTable(name="detalles_envio", 
+	catalog="abcd", 
+	joinColumns= {
+			@JoinColumn(name="id_d_envio", nullable=false,updatable=false)
+	}, inverseJoinColumns= {
+			@JoinColumn(name="detalle_env", nullable=false,updatable=false)
+	})
+	*/
+	
 	private Componente c;
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="t")
